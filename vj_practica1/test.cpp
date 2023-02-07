@@ -1,5 +1,8 @@
 #include <iostream>
+#include "raylib.h"
 
 int main() {
-    std::cout << "Sacame la verga lupe, que la tengo bien parada.\n"; 
+
+    InitWindow(400, 400, "COÑO");
+
 }
