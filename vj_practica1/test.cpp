@@ -1,30 +1,34 @@
+#include <cmath>
 #include <iostream>
 #include "raylib.h"
 
 int main() {
     const int height = 1000;
-    const int width = 1400;
-    const int img_height = 217;
-    const int img_width = 350;
+    const int width = 1000;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
-    InitWindow(width, height, "P0_1");
+    InitWindow(width, height, "COÑO");
     InitAudioDevice();
     Vector2 pos = { width/2, height/2 };
     SetTargetFPS(60);
     Texture2D img = LoadTexture("dvd.png");
-    img.height = img_height;
-    img.width = img_width;
     auto moveX = 200;
     auto moveY = 200;
     Sound ping = LoadSound("cartoon118.mp3");
 
-    auto ratioX = width / img_width;
-    auto ratioY = height / img_height;
+
+    int old_width = width, old_height = height;
+    int new_width = width, new_height = height;
+    auto aspect_ratio = (img_width >= img_height) ? 
+        (float)img_height/(float)img_width :
+        (float)img_width/(float)img_height;
+    auto canvas_ratio = std::max(width/img_width, height/img_height);
+
     while(!WindowShouldClose()) {
-        img.width = GetScreenWidth() / ratioX;
-        img.height = GetScreenHeight() / ratioY;
+        img.width  = std::min(GetScreenWidth(), GetScreenHeight()) / canvas_ratio;
+        img.height = img.width * aspect_ratio; 
+
         if(pos.x + img.width > GetScreenWidth()) {
             pos.x = GetScreenWidth() - img.width;
         }
@@ -48,8 +52,8 @@ int main() {
         pos.x += moveX * GetFrameTime();
         pos.y += moveY * GetFrameTime();
         BeginDrawing();
-        ClearBackground(WHITE);
-        DrawTexture(img, (int)pos.x, (int)pos.y, WHITE);
+        ClearBackground(GRAY);
+        DrawTextureV(img, pos, WHITE);
         EndDrawing();
     }
     StopSoundMulti();
