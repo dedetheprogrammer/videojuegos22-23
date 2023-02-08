@@ -196,8 +196,8 @@ void Asteroids() {
     SetTargetFPS(60);
 
     //-- Sound
-    InitAudioDevice();
-    Sound bcs = LoadSound("bettercallsaul.mp3");
+    //InitAudioDevice();
+    //Sound bcs = LoadSound("bettercallsaul.mp3");
 
     Texture2D asteroid_sprite = LoadTexture("saul_goodman.png");
     Vector2 offset{(float)asteroid_sprite.width/2, (float)asteroid_sprite.height/2};
@@ -219,7 +219,7 @@ void Asteroids() {
                 asteroid_sprite
             )
         );
-        PlaySoundMulti(bcs);
+        //PlaySoundMulti(bcs);
         //std::cout << "Asteroid: " << asteroids.back() << "\n"; 
     }
 
@@ -250,7 +250,7 @@ void Asteroids() {
                     asteroid_sprite
                 )
             );
-            PlaySoundMulti(bcs);
+            //PlaySoundMulti(bcs);
         }
         DrawText("ASTEROIDS DEMO", 25, 25, 50, WHITE);
         EndDrawing();
@@ -261,9 +261,8 @@ void Asteroids() {
         }
     }
     UnloadTexture(asteroid_sprite);
-    UnloadSound(bcs);
-    CloseAudioDevice();
-    CloseWindow();
+    //UnloadSound(bcs);
+    //CloseAudioDevice();
 }
 
 int main(void) {
