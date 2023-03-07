@@ -126,8 +126,7 @@ var far_clip  	    = 100.0; // Far clip.
 var has_perspective = true;  // The camera is in perspective projection.
 var previous_x 		= 0.0;   // Previous x position before moving the camera again.
 var previous_y      = 0.0;   // Previous y position before moving the camera again.
-var can_rotate		= false; 
-var is_rotating     = false; // The camera is rotating.
+var can_rotate		= false; // Indicates if the camera can rotate.
 var rotating_factor = 0.05;	 // Distance to degrees.
 var current_pitch   = 0.0;   // Current rotation in X-axis.
 var current_yaw		= 0.0;   // Current rotation in Y-axis.
@@ -196,6 +195,7 @@ for (let i=0; i < 20; i++)
 	objectsToDraw.push(cube);
 }
 
+// Producto matriz*vector.
 function product(m, v) {
 	let r = vec4(0.0, 0.0, 0.0, 0.0);
 	for (let i = 0; i < 4; i++) {
@@ -206,6 +206,7 @@ function product(m, v) {
 	return r;
 }
 
+/*
 var ejes = [];
 function random_array() {
 	ejes.push(vec3());
@@ -221,15 +222,24 @@ function random_array() {
 		}
 	}
 }
+*/
 
 //----------------------------------------------------------------------------
 // Initialization function
 //----------------------------------------------------------------------------
-
+var canvas;
+// https://stackoverflow.com/questions/19142993/how-draw-in-high-resolution-to-canvas-on-chrome-and-why-if-devicepixelratio
+// https://stackoverflow.com/a/15666143
 window.onload = function init() {
-	
+	canvas = document.getElementById("gl-canvas");
 	// Set up a WebGL Rendering Context in an HTML5 Canvas
-	var canvas = document.getElementById("gl-canvas");
+	// Estas opciones sirven para reescalarar la densisdad de pixeles de acuerdo
+	// al monitor desde el que se ve el canvas, ya que aunque se reescale el canvas
+	// tiene muchos menos pixeles que los que deberia tener acorde al monitor, por
+	// lo que estos se exanden y se ve borroso.
+	const device_pixel_ratio = window.devicePixelRatio || 1;
+	canvas.width = canvas.clientWidth * device_pixel_ratio;
+	canvas.height = canvas.clientHeight * device_pixel_ratio;
 	aspect_ratio = canvas.width/canvas.height;
 	gl = WebGLUtils.setupWebGL(canvas);
 	if (!gl) {
@@ -274,6 +284,7 @@ window.onload = function init() {
 	view = lookAt(eye,target,up);
 	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view); // copy view to uniform value in shader
 	
+	// Si se pulsa el boton izquierdo, empieza la rotacion.
 	canvas.addEventListener('mousedown', (event) => {
 		if (event.button === 0) {
 			previous_x = event.clientX;
@@ -282,6 +293,7 @@ window.onload = function init() {
 		}
 	})
 
+	// Si se deja de pulsar el boton izquierdo, reinicia la rotacion.
 	canvas.addEventListener("mouseup", (event) => {
 		if (event.button === 0) {
 			previous_x = 0;
@@ -292,13 +304,23 @@ window.onload = function init() {
 		}
 	});
 
+	// Si el raton se mueve, salta el evento.
 	canvas.addEventListener("mousemove", (event) => {
+		// Debe poder rotarse para poder modificar la rotacion de la camara.
 		if (can_rotate) {
+			// 1. Se verifica que el grado de rotacion de pitch actual es menor
+			// que el maximo.
 			if (Math.abs(current_pitch) < max_pitch) {
+				// a. Se obtiene la coordenada y de la posicion del raton
 				let aux_y = event.clientY;
+				// b. Se obtiene el desplazamiento desde el ultimo punto y se multiplica
+				// por un factor (elegido a ojo) que pasa de pixeles a 'grados'.
 				let current_y = (event.clientY - previous_y) * rotating_factor;
+				// c. Se guarda la nueva ultima posicion y aumenta el grado de
+				// desplazamiento.
 				previous_y    = aux_y;
 				current_pitch += current_y;
+				// d. Se calcula la matriz de transformacion para rotar la camara.
 				let cos_x = Math.cos(current_y * (Math.PI/180.0)),
 					sin_x = Math.sin(current_y * (Math.PI/180.0)),
 					rx    = [
@@ -307,13 +329,17 @@ window.onload = function init() {
 						[0.0, sin_x,  cos_x, 0.0],
 						[0.0, 0.0  ,  0.0  , 1.0]
 					];
+				// e. Como la camara no esta en el origen, primero se mueve al mismo.
 				let c = vec4(target[0]-eye[0], target[1]-eye[1], target[2]-eye[2], 1.0);
+				// f. Producto matricial y actualizacion del target.
 				let h = product(rx, c);
 				target = vec3(h[0]+eye[0], h[1]+eye[1], h[2]+eye[2]);
 				//c  = vec4(up[0], up[1], up[2], 0.0);
 				//h  = product(rx, c);
 				//up = vec3(h[0], h[1], h[2]);
 			}
+			// 2. Se verifica que el grado de rotacion de yaw actual es menor
+			// que el maximo. Mismo funcionamiento pero alrededor del eje Y.
 			if (Math.abs(current_yaw) < max_yaw) {
 				let aux_x     = event.clientX;
 				let current_x = (event.clientX - previous_x) * rotating_factor;
@@ -330,21 +356,33 @@ window.onload = function init() {
 				let c  = vec4(target[0]-eye[0], target[1]-eye[1], target[2]-eye[2], 1.0);
 				let h = product(ry, c);
 				target = vec3(h[0]+eye[0], h[1]+eye[1], h[2]+eye[2]);	
-				c  = vec4(up[0], up[1], up[2], 0.0);
-				h  = product(ry, c);
-				up = vec3(h[0], h[1], h[2]);
 			}
+			// 3. Se actualiza la vista.
 			view = lookAt(eye, target, up);
 			gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
 		}
 	});
-
-	random_array();
+	// Temporizador para los colores aleatorios del fondo.
 	timer = setTimeout(random_color, 1000);
 	requestAnimFrame(render);
   
 };
 
+// Funcion para reescalar las dimensiones del canvas respecto de las dimensiones
+// de la ventana.
+function resize_canvas() {
+	const width  = window.innerWidth;
+	const height = window.innerHeight;
+	let device_pixel_ratio = window.devicePixelRatio || 1;
+	canvas.width = width * device_pixel_ratio;
+	canvas.height = height * device_pixel_ratio;
+	projection = perspective(current_fov, aspect_ratio, near_clip, far_clip);
+	gl.uniformMatrix4fv( programInfo.uniformLocations.projection, gl.FALSE, projection );
+	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+}
+window.addEventListener('resize', resize_canvas);
+
+// Genera un color aleatorio cada segundo para el fondo del canvas.
 function random_color() {
 	clearTimeout(timer);
 	timer = setTimeout(random_color, 1000);
@@ -355,13 +393,15 @@ function random_color() {
 //----------------------------------------------------------------------------
 // Camera movement
 //----------------------------------------------------------------------------
-// Sources:
+// NEW. Sources:
 // - https://www.gavsblog.com/blog/detect-single-and-multiple-keypress-events-javascript
 // - https://www.toptal.com/developers/keycode
 // - https://stackoverflow.com/questions/24147546/webgl-orthographic-camera
 // - https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-let keys_pressed = {};
+// - https://stackoverflow.com/questions/5203407/how-to-detect-if-multiple-keys-are-pressed-at-once-using-javascript
+let keys_pressed = {}; // Mapa para guardar las teclas presionadas.
 document.addEventListener('keydown', (event) => {
+	// Si no se presiona ninguna de las teclas utilizadas en el programa, no se meten.
 	if (event.key == 'ArrowLeft' || event.key == 'ArrowUp' || event.key == 'ArrowRight' || event.key == 'ArrowDown' || event.key == 'o' || event.key == 'p' || event.key == '+' || event.key == '-') {
 		keys_pressed[event.key] = true;
 	}
