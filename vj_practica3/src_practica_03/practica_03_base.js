@@ -404,6 +404,23 @@ function checkCollision(index1, index2) {
 		// Asignamos las velocidades finales a las esferas
 		sphere1.velocity = [v1f[0], v1f[1], v1f[2]];
 		sphere2.velocity = [v2f[0], v2f[1], v2f[2]];
+
+		if(index1 == 0){
+			if(sphere1.velocity[0] > 0) yDir = 1;
+			else if(sphere1.velocity[0] < 0) yDir = -1
+
+			if(sphere1.velocity[1] > 0) xDir = 1;
+			else if(sphere1.velocity[1] < 0) xDir = -1
+		}else if(index2 == 0){
+			if(sphere2.velocity[0] > 0) yDir = 1;
+			else if(sphere2.velocity[0] < 0) yDir = -1
+
+			if(sphere2.velocity[1] > 0) xDir = 1;
+			else if(sphere2.velocity[1] < 0) xDir = -1
+		}
+
+		console.log("xDir: ", xDir);
+		console.log("yDir: ", ydir);
 		
 		/*console.log("Velocidad1: ", sphere1.velocity);
 		console.log("Velocidad2: ", sphere2.velocity);
@@ -499,6 +516,7 @@ function sphere_sphere_intersection(sphere1, sphere2) {
 const gravity = 0.00000098
 const air_friction = 0.000000001;
 function update(dt) {
+	
 	// Update state
 	spheres.forEach(function(sphere, index) {
 		//console.log(index)
@@ -561,7 +579,28 @@ function update(dt) {
                     otherSphere.velocity = vec_diff(VT2, vec_mul_k(VN2, otherSphere.absorption*0.01));*/
                     //otherSphere.velocity = [-sphere.velocity[0], -sphere.velocity[1], 0.0];
 					otherSphere.velocity[0] = sphere.velocity[0] * -N[0];
-					otherSphere.velocity[1] = sphere.velocity[1] * -N[1];
+					otherSphere.velocity[1] = sphere.velocity[1] * -N[1] ;
+
+
+					if(index == 0){
+						if(sphere.velocity[0] > 0) yDir = 1;
+						else if(sphere.velocity[0] < 0) yDir = -1
+
+						if(sphere.velocity[1] > 0) xDir = 1;
+						else if(sphere.velocity[1] < 0) xDir = -1
+					}else if(i == 0){
+						if(otherSphere.velocity[0] > 0) yDir = 1;
+						else if(otherSphere.velocity[0] < 0) yDir = -1
+
+						if(otherSphere.velocity[1] > 0) xDir = 1;
+						else if(otherSphere.velocity[1] < 0) xDir = -1
+					}
+
+					//Si la bola se cae en z por debajo de -1 se genera en un lugar aleatorio
+					//No lo he comprobado, porque no hay gravedad y colision con el suelo
+					if(sphere.velocity[2] < -1){
+						
+					}
                 }
 				spheres[i] = otherSphere;
             //           }

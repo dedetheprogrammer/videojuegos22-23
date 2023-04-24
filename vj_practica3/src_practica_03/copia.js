@@ -13,6 +13,7 @@ document.addEventListener('keyup', (event) => {
 xDir = 0;
 yDir = 0;
 function camera() {
+	console.log("copia");
 	// CAMERA MOVEMENT
 	// Left arrow: move to the left
 	var sphere = spheres[0];
