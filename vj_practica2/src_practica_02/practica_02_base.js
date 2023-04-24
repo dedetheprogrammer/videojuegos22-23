@@ -78,6 +78,7 @@ const shapes = {
 	axes: {Start: 0, Vertices: 6}
 };
 	
+//Declaración de los colores de los diferentes cubos
 const red =			[1.0, 0.0, 0.0, 1.0];
 const green =		[0.0, 1.0, 0.0, 1.0];
 const blue =		[0.0, 0.0, 1.0, 1.0];
@@ -110,6 +111,7 @@ const colorsAxes = [
 
 const colorsWireCube = white;
 
+//Vector de colores
 const colorsCube = [red, green, blue, lightred, lightgreen, darkgreen, lightblue, 
 	darkblue, greenblue, white, ligthyellow, yellow, pink, purple, darkpurple, orange, brown, grey, darkred, darkyellow];
 
@@ -496,12 +498,15 @@ function render() {
 	var j = -1;
 	var k = 0.2;
 	var l = 1;
+
+	//Creamos 20 cubos más multiplicando la matriz del cubo por otra matriz de orden inverso
+	//para tener rotación sobre el eje como del centro
 	for (let i=2; i < 22; i++)
 	{
 		if(i % 2 == 0) { j++; }
 		objectsToDraw[i].uniforms.u_model = translate(1.0 + j, 0.0, 3.0);
-		objectsToDraw[i].uniforms.u_model = mult(rotate(rotAngle * l, ejeY/*ejes[i]*/), objectsToDraw[i].uniforms.u_model);
-		objectsToDraw[i].uniforms.u_model = mult(objectsToDraw[i].uniforms.u_model, rotate(rotAngle * l, ejeY/*ejes[i]*/));
+		objectsToDraw[i].uniforms.u_model = mult(rotate(rotAngle * l, ejeY), objectsToDraw[i].uniforms.u_model);
+		objectsToDraw[i].uniforms.u_model = mult(objectsToDraw[i].uniforms.u_model, rotate(rotAngle * l, ejeY));
 		l = l + k;
 	}
 	
@@ -568,6 +573,6 @@ function setBuffersAndAttributes(pInfo, ptsArray, color) {
 	gl.vertexAttribPointer( pInfo.attribLocations.vPosition, 4, gl.FLOAT, gl.FALSE, 0, 0 );
 	gl.enableVertexAttribArray( pInfo.attribLocations.vPosition );
 
-	// Colors
+	// Cambiamos el color del cubo segun el parametro color que nos pasan
 	gl.vertexAttrib4fv(pInfo.attribLocations.vColor, color);
 }
