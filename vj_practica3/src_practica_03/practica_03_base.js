@@ -556,10 +556,13 @@ function update(dt) {
 			else if(sphere.velocity[2] < 0) sphere.velocity[2] += 0.1;*/
 			var i = index + 1;
 			for(i; i < spheres.length; i++) {
+
 				otherSphere = spheres[i];
                 //if (otherIndex == index /*|| otherIndex == 0*/) return;
 
                 if (sphere_sphere_intersection(sphere, otherSphere)) {
+					var vRel = vec_diff(otherSphere.position, sphere.position);
+					var theta = [Math.atan2(vRel[1], vRel[0]), Math.atan2(vRel[2], vRel[0]), Math.atan2(vRel[1], vRel[2])];
                     // Separate both spheres the same distance
                     var N = vec_norm(vec_diff(otherSphere.position, sphere.position));
                     var invN = vec_inv(N);
@@ -572,15 +575,18 @@ function update(dt) {
                     var VN1 = vec_mul_k(invN, dotProduct(invN, sphere.velocity));
                     var VT1 = vec_diff(sphere.velocity, VN1);
                     sphere.velocity = vec_diff(VT1, vec_mul_k(VN1, sphere.absorption*0.01));
+
                     
 					/*otherSphere.velocity = vec_inv(sphere.velocity);
                     var VN2 = vec_mul_k(N, dotProduct(N, otherSphere.velocity));
                     var VT2 = vec_diff(otherSphere.velocity, VN2);
                     otherSphere.velocity = vec_diff(VT2, vec_mul_k(VN2, otherSphere.absorption*0.01));*/
                     //otherSphere.velocity = [-sphere.velocity[0], -sphere.velocity[1], 0.0];
-					otherSphere.velocity[0] = sphere.velocity[0] * -N[0];
-					otherSphere.velocity[1] = sphere.velocity[1] * -N[1] ;
-
+					var k = 0;
+					otherSphere.velocity[0] = (sphere.velocity[0] + otherSphere.velocity[0] * Math.cos(theta[0]) + k * (otherSphere.velocity[0] - sphere.velocity[0]) * Math.cos(theta[0])) / 2;
+					otherSphere.velocity[1] = (sphere.velocity[1] + otherSphere.velocity[1] * Math.cos(theta[1]) + k * (otherSphere.velocity[1] - sphere.velocity[1]) * Math.cos(theta[1])) / 2;
+					otherSphere.velocity[2] = (sphere.velocity[2] + otherSphere.velocity[2] * Math.cos(theta[2]) + k * (otherSphere.velocity[2] - sphere.velocity[2]) * Math.cos(theta[2])) / 2;
+					
 
 					if(index == 0){
 						if(sphere.velocity[0] > 0) yDir = 1;
@@ -598,22 +604,22 @@ function update(dt) {
 
 					//Si la bola se cae en z por debajo de -1 se genera en un lugar aleatorio
 					//No lo he comprobado, porque no hay gravedad y colision con el suelo
-					if(sphere.velocity[2] < -1){
+					if(sphere.position[2] < -1){
 						
 					}
                 }
 				spheres[i] = otherSphere;
             //           }
-		}
+			}
 
 		let transform = scale(sphere.diametro, sphere.diametro, sphere.diametro);
 
-		let ejeX = vec3(1.0, 0.0, 0.0);
-		transform = mult(rotate(sphere.rotation[0], ejeX), transform);
+		let ejeX = vec3(-1.0, 0.0, 0.0);
+		transform = mult(transform, rotate(sphere.rotation[0], ejeX));
 		let ejeY = vec3(0.0, 1.0, 0.0);
-		transform = mult(rotate(sphere.rotation[1], ejeY), transform);
-		let ejeZ = vec3(1.0, 0.0, 0.0);
-		transform = mult(rotate(sphere.rotation[2], ejeZ), transform);
+		transform = mult(transform, rotate(sphere.rotation[1], ejeY));
+		let ejeZ = vec3(0.0, 0.0, 1.0);
+		transform = mult(transform, rotate(sphere.rotation[2], ejeZ));
 
 		transform = mult(translate(sphere.position[0], sphere.position[1], sphere.position[2]), transform);
 		
