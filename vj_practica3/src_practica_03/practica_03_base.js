@@ -134,6 +134,7 @@ var spheres = [
 		diametro: 1.5,
 		maxVelocity: 3,
 		absorption: 0.75,
+		mass: 1.0,
 	},
 	{
 		position: [0.0, 0.0, 0.0],
@@ -142,6 +143,7 @@ var spheres = [
 		acceleration: [0.0, 0.0, 0.0],
 		diametro: 1.5,
 		absorption: 0.75,
+		mass: 1.0,
 	},
 	{
 		position: [0.0, 0.0, 0.0],
@@ -150,6 +152,7 @@ var spheres = [
 		acceleration: [0.0, 0.0, 0.0],
 		diametro: 1.5,
 		absorption: 0.75,
+		mass: 1.0,
 	},
 	{
 		position: [0.0, 0.0, 0.0],
@@ -158,6 +161,7 @@ var spheres = [
 		acceleration: [0.0, 0.0, 0.0],
 		diametro: 1.5,
 		absorption: 0.75,
+		mass: 1.0,
 	},
 	{
 		position: [0.0, 0.0, 0.0],
@@ -166,6 +170,7 @@ var spheres = [
 		acceleration: [0.0, 0.0, 0.0],
 		diametro: 1.5,
 		absorption: 0.75,
+		mass: 1.0,
 	},
 	{
 		position: [0.0, 0.0, 0.0],
@@ -174,6 +179,7 @@ var spheres = [
 		acceleration: [0.0, 0.0, 0.0],
 		diametro: 1.5,
 		absorption: 0.75,
+		mass: 1.0,
 	},
 	{
 		position: [0.0, 0.0, 0.0],
@@ -182,6 +188,7 @@ var spheres = [
 		acceleration: [0.0, 0.0, 0.0],
 		diametro: 1.5,
 		absorption: 0.75,
+		mass: 1.0,
 	},
 ]
 
@@ -232,24 +239,20 @@ window.onload = function init() {
 
 	// Set initial positions
 
-	spheres[0].position = [0.0, 0.0, spheres[0].diametro];
+	spheres[0].position = [0.0, 0.0, spheres[0].diametro*2];
 	spheres.forEach(function(sphere, index) {
 		if(index != 0){
-			sphere.position = [5*(2*Math.random() - 1), 5*(2*Math.random() - 1), sphere.diametro];
+			sphere.position = [5*(2*Math.random() - 1), 5*(2*Math.random() - 1), sphere.diametro*2];
 			i=0
 			for(i; i<index; i++){
 				if(distance(sphere.position, spheres[i].position) < sphere.diametro){
-					sphere.position = [5*(2*Math.random() - 1), 5*(2*Math.random() - 1), sphere.diametro];
+					sphere.position = [5*(2*Math.random() - 1), 5*(2*Math.random() - 1), sphere.diametro*2];
 					i = -1;
 				}
 			}
 			sphere.rotation = [Math.random()*360, Math.random()*360, Math.random()*360];
 		}
 	});
-	spheres[1].position = [5.0, 4.0, spheres[1].diametro];
-	spheres[1].velocity[0] = -0.01;
-	spheres[2].position = [-5.0, 3.8, spheres[2].diametro];
-	//spheres[2].velocity[0] = 0.01;
 	
 	lastTick = Date.now();
 	requestAnimFrame(tick);
@@ -293,7 +296,7 @@ function camera() {
 	var sphere = spheres[0];
 	if (keys_pressed['ArrowLeft']) {
 		xDir = -1;
-		//console.log("Going left.");
+		
 		sphere.velocity[1] -= sphere.acceleration[1];
 		if(sphere.velocity[1] < -sphere.maxVelocity){
 			sphere.velocity[1] = sphere.maxVelocity;
@@ -305,10 +308,9 @@ function camera() {
 			sphere.velocity[1] = 0.0;
 		}
 	}
-	// Up Arrow: move upwards.
+	
     if (keys_pressed['ArrowUp']) {
 		yDir = -1;
-		//console.log("Going up.");
         sphere.velocity[0] -= sphere.acceleration[0];
 		if(sphere.velocity[0] < -sphere.maxVelocity){
 			sphere.velocity[0] = sphere.maxVelocity;
@@ -323,7 +325,6 @@ function camera() {
 	// Right arrow: move to the right.
 	if (keys_pressed['ArrowRight']) {
 		xDir = 1;
-		//console.log("Going right.");
 		sphere.velocity[1] += sphere.acceleration[1];
 		if(sphere.velocity[1] > +sphere.maxVelocity) {
 			sphere.velocity[1] = sphere.maxVelocity;
@@ -338,7 +339,6 @@ function camera() {
 	// Down arrow: move downwards.
     if (keys_pressed['ArrowDown']) {
 		yDir = 1;
-		//console.log("Going down.");
         sphere.velocity[0] += sphere.acceleration[0];
 		if(sphere.velocity[0] > +sphere.maxVelocity) {
 			sphere.velocity[0] = sphere.maxVelocity;
@@ -356,260 +356,131 @@ function camera() {
 	spheres[0] = sphere;
 }
 
-function distance(a, b) {
-	var dx = Math.abs(a[0] - b[0]);
-	var dy = Math.abs(a[1] - b[1]);
-	var dz = Math.abs(a[2] - b[2]);
-	return Math.sqrt(dx*dx + dy*dy + dz*dz);
-}
 
-function checkCollision(index1, index2) {
-	var sphere1 = spheres[index1];
-	var sphere2 = spheres[index2];
-
-	// Calculamos la distancia entre los centros de las esferas
-	var futurePos1 = [sphere1.position[0] + sphere1.velocity[0], sphere1.position[1] + sphere1.velocity[1], sphere1.position[2] + sphere1.velocity[2]]
-	var futurePos2 = [sphere2.position[0] + sphere2.velocity[0], sphere2.position[1] + sphere2.velocity[1], sphere2.position[2] + sphere2.velocity[2]]
-	var dist = distance(futurePos1, futurePos2);
-	
-	// Si la distancia es menor o igual a la suma de los radios de las esferas, hay colisión
-	if (dist < sphere1.diametro) {
-		var radius = sphere1.diametro / 2;
-		// Calculamos la dirección de la recta que une los centros de las esferas
-		var direction = subtract(futurePos2, futurePos1);
-		//console.log("Direction: ", direction);
-		var normDir = normalize(vec3(direction[0], direction[1], direction[2]));
-		var correction = sphere.diametro - dist;
-		var desp = [normDir[0] * -correction, normDir[1] * -correction, normDir[2] * -correction];
-		sphere1.position[0] = sphere1.position[0] + desp[0];
-		sphere1.position[1] = sphere1.position[1] + desp[1];
-		sphere1.position[2] = sphere1.position[2] + desp[2];
-		//console.log("NormDir: ", normDir);
-		
-		// Calculamos las velocidades iniciales de las esferas
-		var v1i = sphere1.velocity;
-		var v2i = sphere2.velocity;
-		
-		// Calculamos las velocidades finales de las esferas después del choque
-		var m = radius * radius * radius;
-
-		var dir = subtract(vec3(v1i[0], v1i[1], v1i[2]), vec3(v2i[0], v2i[1], v2i[2]));
-		var v1 = scale((2 * m / (2*m)) * dot(vec3(dir[0], dir[1], dir[2]), vec3(direction[0], direction[1], direction[2])), normDir);
-		var v2 = scale((2 * m / (2*m)) * dot(vec3(dir[0], dir[1], dir[2]), vec3(direction[0], direction[1], direction[2])), normDir);
-		var v1f = subtract(vec3(v1i[0], v1i[1], v1i[2]), vec3(v1[0], v1[1], v1[2]));
-		var v2f = subtract(vec3(v2i[0], v2i[1], v2i[2]), vec3(v2[0], v2[1], v2[2]));
-		//console.log(v1f);
-		//console.log(v2f);
-		
-		// Asignamos las velocidades finales a las esferas
-		sphere1.velocity = [v1f[0], v1f[1], v1f[2]];
-		sphere2.velocity = [v2f[0], v2f[1], v2f[2]];
-
-		if(index1 == 0){
-			if(sphere1.velocity[0] > 0) yDir = 1;
-			else if(sphere1.velocity[0] < 0) yDir = -1
-
-			if(sphere1.velocity[1] > 0) xDir = 1;
-			else if(sphere1.velocity[1] < 0) xDir = -1
-		}else if(index2 == 0){
-			if(sphere2.velocity[0] > 0) yDir = 1;
-			else if(sphere2.velocity[0] < 0) yDir = -1
-
-			if(sphere2.velocity[1] > 0) xDir = 1;
-			else if(sphere2.velocity[1] < 0) xDir = -1
-		}
-
-		console.log("xDir: ", xDir);
-		console.log("yDir: ", ydir);
-		
-		/*console.log("Velocidad1: ", sphere1.velocity);
-		console.log("Velocidad2: ", sphere2.velocity);
-		console.log("colision");
-		var x2 = sphere2.velocity[0];
-		var y2 = sphere2.velocity[1];
-		var z2 = sphere2.velocity[2];
-		sphere2.velocity = [sphere1.velocity[0], sphere1.velocity[1], sphere1.velocity[2]];
-		sphere1.velocity = [x2, y2, z2];*/
-		
-		spheres[index1] = sphere1;
-		spheres[index2] = sphere2;
-		return true;
-	}
-	
-	return false;
-}
 
 //----------------------------------------------------------------------------
 // Math functions
 //----------------------------------------------------------------------------
 
-function sqPointDistance(a, b) {
+function vectorDistance(a, b) {
     var dist = [Math.abs(b[0]-a[0]), Math.abs(b[1]-a[1]), Math.abs(b[2]-a[2])];
     return dist[0]*dist[0] + dist[1]*dist[1] + dist[2]*dist[2];
 }
 
-function pointDistance(a, b) {
-    return Math.sqrt(sqPointDistance(a,b));
+function distance(a, b) {
+    return Math.sqrt(vectorDistance(a,b));
 }
 
-function vec_mod(v) {
+function modulo(v) {
     return Math.sqrt(v.map((x, i) => v[i] * v[i]).reduce((m, n) => m + n));
 }
 
-function vec_norm(v) {
-    return vec_div_k(v, vec_mod(v));
+function normalizacion(v) {
+    return division_entero(v, modulo(v));
 }
 
-function dotProduct(a, b) {
-    return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
+function dot(a, b) {
+	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]
+    //return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
 }
 
-function vec_inv(v) {
+function negar(v) {
     return [-v[0], -v[1], -v[2]];
 }
 
-function vec_sum(a, b) {
+function suma(a, b) {
     return [a[0]+b[0], a[1]+b[1], a[2]+b[2]];
 }
 
-function vec_sum_k(v, k) {
-    return [v[0]+k, v[1]+k, v[2]+k];
-}
-
-function vec_diff(a,b) {
+function resta(a,b) {
     return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
 }
 
-function vec_diff_k(v, k) {
-    return [v[0]-k, v[1]-k, v[2]-k];
-}
-
-function vec_div_k(v, k) {
+function division_entero(v, k) {
     return [v[0]/k, v[1]/k, v[2]/k];
 }
 
-function vec_mul_k(v,k) {
+function multiplicacion_entero(v,k) {
     return [v[0]*k, v[1]*k, v[2]*k];
-}
-
-function reflection(v, n) {
-    //-(2 * (n·v) * n - v)
-    //-(n * (2 * (n·v))  - v)
-    return vec_inv(vec_diff(vec_mul_k(n, (2 * dotProduct(n, v))), v));
 }
 
 //----------------------------------------------------------------------------
 // Collision functions
 //----------------------------------------------------------------------------
-function sphere_plane_intersection(sphere, plane) {
-    return (dotProduct(plane.normal, sphere.position) - pointDistance(plane.position, [0, 0, 0])) < (sphere.diametro / 2);
-}
-
-function sphere_sphere_intersection(sphere1, sphere2) {
+function interseccion(sphere1, sphere2) {
     var rSum = sphere1.diametro;
-    return sqPointDistance(sphere1.position, sphere2.position) < (rSum * rSum);
+    return vectorDistance(sphere1.position, sphere2.position) < (rSum * rSum);
 }
 
 //----------------------------------------------------------------------------
 // Update Event Function 
 //----------------------------------------------------------------------------
-const gravity = 0.00000098
-const air_friction = 0.000000001;
+const gravity = 0.000098
+const air_friction = 0.0000001;
 function update(dt) {
 	
 	// Update state
 	spheres.forEach(function(sphere, index) {
-		//console.log(index)
 		// Update state (rotation) of the sphere
 		sphere.rotation[1] += ((sphere.velocity[0]/(2*Math.PI))*10*dt) % 360;
 		sphere.rotation[0] += ((sphere.velocity[1]/(2*Math.PI))*10*dt) % 360;
+
+		sphere.velocity[2] = (sphere.velocity[2] - gravity/sphere.mass *dt);
+		sphere.position[2] = (sphere.position[2] + sphere.velocity[2]*dt);
+
+		if (sphere.position[2] - (sphere.diametro) <= 0 && Math.abs(sphere.position[0]) < 10 && Math.abs(sphere.position[1]) < 10) {
+			sphere.position[2]  = sphere.diametro;
+			sphere.velocity[2] *= -0.8;
+		}
+
+		if (sphere.position[2] < -1){
+			sphere.position = [5*(2*Math.random() - 1), 5*(2*Math.random() - 1), sphere.diametro*3];
+			for(i; i<spheres.length; i++){
+				if(distance(sphere.position, spheres[i].position) < sphere.diametro){
+					sphere.position = [5*(2*Math.random() - 1), 5*(2*Math.random() - 1), sphere.diametro*3];
+					i = -1;
+				}
+			}
+			sphere.rotation = [Math.random()*360, Math.random()*360, Math.random()*360];
+			sphere.velocity[0] = 0;
+			sphere.velocity[1] = 0;
+		}
 		
-		//sphere.velocity[0] -= (air_friction * sphere.velocity[0]) / sphere.mass * dt;                // vx
-		//sphere.velocity[1] -= (air_friction * sphere.velocity[1]) / sphere.mass * dt;                // vy
-		//sphere.velocity[2] -= (gravity + air_friction * sphere.velocity[2]) / sphere.mass * dt;        // vz
-		
-		var radius = sphere.diametro / 2;
 		if(index != 0){	
-			/*sphere.acceleration[2] -= gravity;
-			sphere.velocity[2] = sphere.velocity[2] + sphere.acceleration[2]*dt/2; 
-			sphere.position[2] = sphere.position[2] + sphere.velocity[2]*dt;*/
-
-
-			// Update graphical representation
-			/*i = index + 1;
-			for(i; i < spheres.length; i++){
-				checkCollision(index, i);
-			}*/
 
 			sphere.position[0] += sphere.velocity[0] * dt;
 			sphere.position[1] += sphere.velocity[1] * dt;
-			sphere.position[2] += sphere.velocity[2] * dt;
 		}
 			
-			/*if(sphere.velocity[0] > 0 ) sphere.velocity[0] -= 0.1;
-			else if(sphere.velocity[0] < 0) sphere.velocity[0] += 0.1;
-
-			if(sphere.velocity[1] > 0 ) sphere.velocity[1] -= 0.1;
-			else if(sphere.velocity[1] < 0) sphere.velocity[1] += 0.1;
-
-			if(sphere.velocity[2] > 0 ) sphere.velocity[2] -= 0.1;
-			else if(sphere.velocity[2] < 0) sphere.velocity[2] += 0.1;*/
+			
 			var i = index + 1;
 			for(i; i < spheres.length; i++) {
 
 				otherSphere = spheres[i];
-                //if (otherIndex == index /*|| otherIndex == 0*/) return;
 
-                if (sphere_sphere_intersection(sphere, otherSphere)) {
-					var vRel = vec_diff(otherSphere.position, sphere.position);
+                if (interseccion(sphere, otherSphere)) {
+					var vRel = resta(otherSphere.position, sphere.position);
 					var theta = [Math.atan2(vRel[1], vRel[0]), Math.atan2(vRel[2], vRel[0]), Math.atan2(vRel[1], vRel[2])];
                     // Separate both spheres the same distance
-                    var N = vec_norm(vec_diff(otherSphere.position, sphere.position));
-                    var invN = vec_inv(N);
-                    var P = vec_mul_k(N, sphere.diametro - pointDistance(sphere.position, otherSphere.position) + 0.01);
+                    var N = normalizacion(resta(otherSphere.position, sphere.position));
+                    var invN = negar(N);
+                    var P = multiplicacion_entero(N, sphere.diametro - distance(sphere.position, otherSphere.position) + 0.01);
 
-                    sphere.position = vec_diff(sphere.position, vec_div_k(P, 2));
-                    otherSphere.position = vec_sum(otherSphere.position, vec_div_k(P, 2));
+                    sphere.position = resta(sphere.position, division_entero(P, 2));
+                    otherSphere.position = suma(otherSphere.position, division_entero(P, 2));
 
                     // Calculate new velocities
-                    var VN1 = vec_mul_k(invN, dotProduct(invN, sphere.velocity));
-                    var VT1 = vec_diff(sphere.velocity, VN1);
-                    sphere.velocity = vec_diff(VT1, vec_mul_k(VN1, sphere.absorption*0.01));
-
+                    var VN1 = multiplicacion_entero(invN, dot(invN, sphere.velocity));
+                    var VT1 = resta(sphere.velocity, VN1);
+                    sphere.velocity = resta(VT1, multiplicacion_entero(VN1, sphere.absorption*0.01));
                     
-					/*otherSphere.velocity = vec_inv(sphere.velocity);
-                    var VN2 = vec_mul_k(N, dotProduct(N, otherSphere.velocity));
-                    var VT2 = vec_diff(otherSphere.velocity, VN2);
-                    otherSphere.velocity = vec_diff(VT2, vec_mul_k(VN2, otherSphere.absorption*0.01));*/
-                    //otherSphere.velocity = [-sphere.velocity[0], -sphere.velocity[1], 0.0];
 					var k = 0;
 					otherSphere.velocity[0] = (sphere.velocity[0] + otherSphere.velocity[0] * Math.cos(theta[0]) + k * (otherSphere.velocity[0] - sphere.velocity[0]) * Math.cos(theta[0])) / 2;
 					otherSphere.velocity[1] = (sphere.velocity[1] + otherSphere.velocity[1] * Math.cos(theta[1]) + k * (otherSphere.velocity[1] - sphere.velocity[1]) * Math.cos(theta[1])) / 2;
 					otherSphere.velocity[2] = (sphere.velocity[2] + otherSphere.velocity[2] * Math.cos(theta[2]) + k * (otherSphere.velocity[2] - sphere.velocity[2]) * Math.cos(theta[2])) / 2;
-					
 
-					if(index == 0){
-						if(sphere.velocity[0] > 0) yDir = 1;
-						else if(sphere.velocity[0] < 0) yDir = -1
-
-						if(sphere.velocity[1] > 0) xDir = 1;
-						else if(sphere.velocity[1] < 0) xDir = -1
-					}else if(i == 0){
-						if(otherSphere.velocity[0] > 0) yDir = 1;
-						else if(otherSphere.velocity[0] < 0) yDir = -1
-
-						if(otherSphere.velocity[1] > 0) xDir = 1;
-						else if(otherSphere.velocity[1] < 0) xDir = -1
-					}
-
-					//Si la bola se cae en z por debajo de -1 se genera en un lugar aleatorio
-					//No lo he comprobado, porque no hay gravedad y colision con el suelo
-					if(sphere.position[2] < -1){
-						
-					}
                 }
 				spheres[i] = otherSphere;
-            //           }
 			}
 
 		let transform = scale(sphere.diametro, sphere.diametro, sphere.diametro);
@@ -684,9 +555,7 @@ function setUniforms(pInfo, uniforms) {
 	// Projection matrix
 	projection = perspective( 45.0, canvas.width/canvas.height, 0.1, 100.0 );
 	gl.uniformMatrix4fv( pInfo.uniformLocations.projection, gl.FALSE, projection ); // copy projection to uniform value in shader
-	
-	//eye = vec3(1.0, 0.0, 15.0);
-	//target = vec3(0.0, 0.0, 0.0);
+
 	// View matrix (static cam)
 	eye = vec3(10.0 + spheres[0].position[0], spheres[0].position[1], 10.0);
 	target = vec3(spheres[0].position[0], spheres[0].position[1], spheres[0].position[2]);
