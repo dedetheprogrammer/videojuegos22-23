@@ -404,12 +404,11 @@ function multiplicacion_entero(v,k) {
     return [v[0]*k, v[1]*k, v[2]*k];
 }
 
-//----------------------------------------------------------------------------
-// Collision functions
-//----------------------------------------------------------------------------
+
+
 function interseccion(sphere1, sphere2) {
-    var rSum = sphere1.diametro;
-    return vectorDistance(sphere1.position, sphere2.position) < (rSum * rSum);
+    let vec = resta(sphere2.position, sphere1.position)
+    return dot(vec, vec) < (sphere1.diametro * sphere1.diametro);
 }
 
 //----------------------------------------------------------------------------
@@ -446,42 +445,49 @@ function update(dt) {
 			sphere.velocity[1] = 0;
 		}
 		
-		if(index != 0){	
-
+		if(index != 0){
 			sphere.position[0] += sphere.velocity[0] * dt;
 			sphere.position[1] += sphere.velocity[1] * dt;
 		}
 			
-			
-			var i = index + 1;
-			for(i; i < spheres.length; i++) {
+		var i = index + 1;
+		for(i; i < spheres.length; i++) {
 
-				otherSphere = spheres[i];
+			otherSphere = spheres[i];
 
-                if (interseccion(sphere, otherSphere)) {
-					var vRel = resta(otherSphere.position, sphere.position);
-					var theta = [Math.atan2(vRel[1], vRel[0]), Math.atan2(vRel[2], vRel[0]), Math.atan2(vRel[1], vRel[2])];
-                    // Separate both spheres the same distance
-                    var N = normalizacion(resta(otherSphere.position, sphere.position));
-                    var invN = negar(N);
-                    var P = multiplicacion_entero(N, sphere.diametro - distance(sphere.position, otherSphere.position) + 0.01);
+			if (interseccion(sphere, otherSphere)) {
+				
+				// Se calculan las correcion de las esferas
+				var normal = normalizacion(resta(otherSphere.position, sphere.position));
+				var normalNegada = negar(normal);
+				var correccion = multiplicacion_entero(normal, sphere.diametro - distance(sphere.position, otherSphere.position) + 0.01);
 
-                    sphere.position = resta(sphere.position, division_entero(P, 2));
-                    otherSphere.position = suma(otherSphere.position, division_entero(P, 2));
+				sphere.position = resta(sphere.position, division_entero(correccion, 2));
+				otherSphere.position = suma(otherSphere.position, division_entero(correccion, 2));
 
-                    // Calculate new velocities
-                    var VN1 = multiplicacion_entero(invN, dot(invN, sphere.velocity));
-                    var VT1 = resta(sphere.velocity, VN1);
-                    sphere.velocity = resta(VT1, multiplicacion_entero(VN1, sphere.absorption*0.01));
-                    
-					var k = 0;
-					otherSphere.velocity[0] = (sphere.velocity[0] + otherSphere.velocity[0] * Math.cos(theta[0]) + k * (otherSphere.velocity[0] - sphere.velocity[0]) * Math.cos(theta[0])) / 2;
-					otherSphere.velocity[1] = (sphere.velocity[1] + otherSphere.velocity[1] * Math.cos(theta[1]) + k * (otherSphere.velocity[1] - sphere.velocity[1]) * Math.cos(theta[1])) / 2;
-					otherSphere.velocity[2] = (sphere.velocity[2] + otherSphere.velocity[2] * Math.cos(theta[2]) + k * (otherSphere.velocity[2] - sphere.velocity[2]) * Math.cos(theta[2])) / 2;
+				// Se calculan las nuevas velocidades
+				var velocidadNormal = multiplicacion_entero(normalNegada, dot(normalNegada, sphere.velocity));
+				var velocidadTangencial = resta(sphere.velocity, velocidadNormal);
+				sphere.velocity = resta(velocidadTangencial, multiplicacion_entero(velocidadNormal, sphere.absorption*0.01));
+				
+				var k = 0;
+				var velocidadRelativa = resta(otherSphere.position, sphere.position);
+				var theta = [Math.atan2(velocidadRelativa[1], velocidadRelativa[0]), Math.atan2(velocidadRelativa[2], velocidadRelativa[0]), Math.atan2(velocidadRelativa[1], velocidadRelativa[2])];
 
-                }
-				spheres[i] = otherSphere;
+				otherSphere.velocity[0] = (sphere.velocity[0] + otherSphere.velocity[0] * Math.cos(theta[0]) + k * (otherSphere.velocity[0] - sphere.velocity[0]) * Math.cos(theta[0])) / 2;
+				otherSphere.velocity[1] = (sphere.velocity[1] + otherSphere.velocity[1] * Math.cos(theta[1]) + k * (otherSphere.velocity[1] - sphere.velocity[1]) * Math.cos(theta[1])) / 2;
+				otherSphere.velocity[2] = (sphere.velocity[2] + otherSphere.velocity[2] * Math.cos(theta[2]) + k * (otherSphere.velocity[2] - sphere.velocity[2]) * Math.cos(theta[2])) / 2;
+
+				if(index == 0){
+					if(sphere.velocity[0] > 0) yDir = 1;
+					else if(sphere.velocity[0] < 0) yDir = -1
+
+					if(sphere.velocity[1] > 0) xDir = 1;
+					else if(sphere.velocity[1] < 0) xDir = -1
+				}
 			}
+			spheres[i] = otherSphere;
+		}
 
 		let transform = scale(sphere.diametro, sphere.diametro, sphere.diametro);
 
