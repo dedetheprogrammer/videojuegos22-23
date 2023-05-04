@@ -413,6 +413,28 @@ document.addEventListener('keyup', (event) => {
     keys_pressed[event.key] = false;
 });
 
+// Obtener el elemento HTML en el que se quiere detectar los eventos del ratón.
+const canvas = document.getElementById('myCanvas');
+
+// Agregar un controlador de eventos para el botón izquierdo del ratón.
+canvas.addEventListener('mousedown', function(event) {
+  if (event.button === 0) {
+    // El botón izquierdo del ratón ha sido presionado.
+    console.log('Se ha presionado el botón izquierdo del ratón.');
+  }
+});
+
+// Agregar un controlador de eventos para el botón izquierdo del ratón.
+canvas.addEventListener('mouseup', function(event) {
+  if (event.button === 0) {
+    // El botón izquierdo del ratón ha sido soltado.
+    console.log('Se ha soltado el botón izquierdo del ratón.');
+  }
+});
+
+
+
+
 function camera() {
 	// CAMERA MOVEMENT
 	// Left arrow: move to the left

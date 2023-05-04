@@ -44,7 +44,7 @@
 
 		void main() 
 		{ 
-			gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0);
+			gl_FragColor = baseColor;
 		}
 	</script>
 
@@ -84,8 +84,8 @@
 		void main() 
 		{ 
 			vec2 rectCoords = cart2rect(origPos);
-
-			gl_FragColor = vec4(baseColor.xyz * checkerboard(rectCoords), 1.0);
+			if (baseColor.xyz == vec3(0.1,0.1,0.1) || baseColor.xyz == vec3(1.0,1.0,1.0)) gl_FragColor = baseColor;
+			else gl_FragColor = vec4(baseColor.xyz * checkerboard(rectCoords), 1.0);
 		}
 	</script>
 
@@ -104,5 +104,7 @@
 	<canvas id="gl-canvas" width="1024" height="512">
 		<p>Oops ... your browser doesn't support the HTML5 canvas element</p>
 	</canvas>
+	<p align="left">Pulsa 'A' o 'D' para apuntar (la bola siempre sale hacia adelante).</p>
+	<p align="left">Para disparar haz click con el ratón, arrastra, y suéltalo.</p>
 </body>
 </html>
